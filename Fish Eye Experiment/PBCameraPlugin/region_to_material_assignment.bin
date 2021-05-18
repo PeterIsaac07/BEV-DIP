@@ -1,0 +1,62 @@
+
+
+Grass_1*Grass
+!
+StraightRoad_1‘*StraightRoad
+
+XCrossing_1˜*	XCrossing
+K
+BitmapRoadMarker_1¹
+surface¸ÿÿÿ(2	ÿÀË*BitmapRoadMarker_1
+]
+ArrowMarkerStraightTurnUS_1º
+surface¸ÿÿÿ(2	ÿÀË*ArrowMarkerStraightTurnUS_1
+
+
+BendRoad_1Æ*BendRoad
+M
+ArrowMarkerBendNL_1¿
+surface¸ÿÿÿ(2	ÿÀË*ArrowMarkerBendNL_1
+"
+Guardrail_1· *GuardrailPylon
+1
+Guardrail_1_SharedInstance· *GuardrailPylon
+
+
+BendRoad_2é*BendRoad
+
+
+BendRoad_3ð*BendRoad
+
+CurvedRoad_1÷*
+BezierRoad
+e
+PedestrianWarningMarkingJapan_1À
+surface¸ÿÿÿ(2	ÿÀË*PedestrianWarningMarkingJapan_1
+
+CurvedRoad_2þ*
+BezierRoad
+
+Roundabout_1¡*
+Roundabout
+
+BMW_X5_SUV_1*
+BMW_X5_SUV
+#
+Audi_A8_Sedan_1¦*Audi_A8_Sedan
+'
+Mazda_RX8_Coupe_1Å*Mazda_RX8_Coupe
+
+School_1²*School
+'
+OfficeBrownFlat_1´*OfficeBrownFlat
+
+HouseOld6_1µ*	HouseOld6
+
+HouseOld3_1¶*	HouseOld3
+3
+Lexus_LS_600h_F_Sport_1Á*Lexus_LS_600h_F_Sport
+[
++Honda_Pan_European_Motorcycle_With_Driver_1Â*)Honda_Pan_European_Motorcycle_With_Driver
++
+Toyota_Previa_MPV_1Ã*Toyota_Previa_MPV
