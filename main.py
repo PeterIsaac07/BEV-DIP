@@ -29,12 +29,6 @@ def read_TCP_image(data):
     R1 = imagenumpy[0:Res].reshape((H,W))
     G1 = imagenumpy[Res:Res*2].reshape((H,W))
     B1 = imagenumpy[Res*2:Res*3].reshape((H,W))
-    #R2 = imagenumpy[Res*3:Res*4].reshape((H,W))
-    #G2 = imagenumpy[Res*4:Res*5].reshape((H,W))
-    #B2 = imagenumpy[Res*5:Res*6].reshape((H,W))
     imgL = np.dstack((R1,G1,B1))
-    #imgR = np.dstack((R2,G2,B2))
     imgL = np.rot90(imgL, 3)
-    #imgR = np.rot90(imgR, 3)
-    #return imgL,imgR
     return imgL
