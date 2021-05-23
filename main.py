@@ -14,3 +14,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             if not data:
                 break
             conn.sendall(data)
+
+def readnbyte(sock, n):
+    buff = bytearray(n)
+    pos = 0
+    while pos < n:
+        cr = sock.recv_into(memoryview(buff)[pos:])
+        pos += cr
+    return buff
