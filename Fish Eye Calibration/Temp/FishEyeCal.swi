@@ -1,0 +1,57 @@
+# create sensor mounts and cameras
+left_fish_mount = visnodes.VisTransform.createTransformNode(r"left_fish_mount")
+scene.BMW_X5_SUV_1.addChild(left_fish_mount)
+left_fish_mount.setTranslation(1.15, 1, 1.10000000596046)
+left_fish_mount.setRotationLegacyYUpAxes(2.3063665715257358, -0.633687274224642, -0.44371260627965781, 0.63368727422464211)
+
+left_fish_monoBeam = visviewer.VisCamera(r"left_fish_monoBeam")
+left_fish_mount.addChild(left_fish_monoBeam)
+left_fish_monoBeam.setTranslation(0, 0, 0)
+left_fish_monoBeam.setRotationLegacyYUpAxes(1.5707963267948966, 0, 0, -1)
+left_fish_monoBeam.setProjectionMatrixPerspective(0.80656297037058056, 0.61940592923487225, 0.10000000149011612, 750)
+
+cameras[r"left_fish"] = VisCameras.CameraInfo(r"left_fish", left_fish_monoBeam, visviewer.VisViewerBase.SPECTATOR, True)
+cameras[r"left_fish"].setSensorDimensions(6.4, 4.8);cameras[r"left_fish"].setFrameRate(20)
+
+right_fish_mount = visnodes.VisTransform.createTransformNode(r"right_fish_mount")
+scene.BMW_X5_SUV_1.addChild(right_fish_mount)
+right_fish_mount.setTranslation(1.15, -1, 1.10000000596046)
+right_fish_mount.setRotationLegacyYUpAxes(1.9060300890122084, -0.497542812164523, 0.71056477546162977, -0.49754281216452317)
+
+right_fish_monoBeam = visviewer.VisCamera(r"right_fish_monoBeam")
+right_fish_mount.addChild(right_fish_monoBeam)
+right_fish_monoBeam.setTranslation(0, 0, 0)
+right_fish_monoBeam.setRotationLegacyYUpAxes(1.5707963267948966, 0, 0, -1)
+right_fish_monoBeam.setProjectionMatrixPerspective(0.80656297037058056, 0.61940592923487225, 0.10000000149011612, 750)
+
+cameras[r"right_fish"] = VisCameras.CameraInfo(r"right_fish", right_fish_monoBeam, visviewer.VisViewerBase.SPECTATOR, True)
+cameras[r"right_fish"].setSensorDimensions(6.4, 4.8);cameras[r"right_fish"].setFrameRate(20)
+
+front_fish_mount = visnodes.VisTransform.createTransformNode(r"front_fish_mount")
+scene.BMW_X5_SUV_1.addChild(front_fish_mount)
+front_fish_mount.setTranslation(3.75, 0, 1.00000000596046)
+front_fish_mount.setRotationLegacyYUpAxes(1.6009545877878544, -0.97028752524781392, 0.17108786974603574, 0.17108786974603571)
+
+front_fish_monoBeam = visviewer.VisCamera(r"front_fish_monoBeam")
+front_fish_mount.addChild(front_fish_monoBeam)
+front_fish_monoBeam.setTranslation(0, 0, 0)
+front_fish_monoBeam.setRotationLegacyYUpAxes(1.5707963267948966, 0, 0, -1)
+front_fish_monoBeam.setProjectionMatrixPerspective(0.80656297037058056, 0.61940592923487225, 0.10000000149011612, 750)
+
+cameras[r"front_fish"] = VisCameras.CameraInfo(r"front_fish", front_fish_monoBeam, visviewer.VisViewerBase.SPECTATOR, True)
+cameras[r"front_fish"].setSensorDimensions(6.4, 4.8);cameras[r"front_fish"].setFrameRate(20)
+
+back_fish_mount = visnodes.VisTransform.createTransformNode(r"back_fish_mount")
+scene.BMW_X5_SUV_1.addChild(back_fish_mount)
+back_fish_mount.setTranslation(-1.05, 0, 1.00000000596046)
+back_fish_mount.setRotationLegacyYUpAxes(3.3877895703687253, -0.12372403020648375, -0.70167384315986336, 0.70167384315986348)
+
+back_fish_monoBeam = visviewer.VisCamera(r"back_fish_monoBeam")
+back_fish_mount.addChild(back_fish_monoBeam)
+back_fish_monoBeam.setTranslation(0, 0, 0)
+back_fish_monoBeam.setRotationLegacyYUpAxes(1.5707963267948966, 0, 0, -1)
+back_fish_monoBeam.setProjectionMatrixPerspective(0.80656297037058056, 0.61940592923487225, 0.10000000149011612, 750)
+
+cameras[r"back_fish"] = VisCameras.CameraInfo(r"back_fish", back_fish_monoBeam, visviewer.VisViewerBase.SPECTATOR, True)
+cameras[r"back_fish"].setSensorDimensions(6.4, 4.8);cameras[r"back_fish"].setFrameRate(20)
+

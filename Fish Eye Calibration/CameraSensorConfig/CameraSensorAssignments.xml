@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ExperimentConfig>
+  <Federates>
+    <Federate federateId="0" hostId="localhost" gpuId="default gpu" />
+  </Federates>
+  <SensorAssignments>
+    <SensorAssignment sensorId="back_fish" federateId="0" />
+    <SensorAssignment sensorId="front_fish" federateId="0" />
+    <SensorAssignment sensorId="left_fish" federateId="0" />
+    <SensorAssignment sensorId="right_fish" federateId="0" />
+  </SensorAssignments>
+</ExperimentConfig>
