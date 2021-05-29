@@ -226,3 +226,29 @@ def undistort_fisheye(calibration_params,path,undistoretedpath):
         undistorted.append(undistorted_img)
         cv2.imwrite(os.path.join(undistoretedpath,'undistoreted'+fname),undistorted_img)
 
+def warp_percentage(img,DIM,percentage_X = 0.5,percentage_Y = 0.5):
+    X = DIM[0]
+    Y = DIM[1]
+    cut_X = int(X*(1-percentage_X)/2)
+    cut_Y = int(Y*(1-percentage_Y))
+    
+    pt1 = [cut_X,cut_Y] #Top-Left
+    pt2 = [X-cut_X,cut_Y] #Top-Right
+    pt3 = [X,Y] #Bottom-Right
+    pt4 = [0,Y] #Bottom-Left
+    
+    pts_list = [pt1,pt2,pt3,pt4]
+    # read input
+    # specify desired output size 
+    width = X - cut_X*2
+    height = Y - cut_Y
+    # specify conjugate x,y coordinates (not y,x)
+    input_pts = np.float32(pts_list)
+    #for val in input_pts:
+    #    cv2.circle(img,(val[0],val[1]),5,(0,255,0),-1)
+    output_pts = np.float32([[0,0], [width,0], [width,height], [0,height]])
+    # compute perspective matrix
+    matrix = cv2.getPerspectiveTransform(input_pts,output_pts)
+    # do perspective transformation setting area outside input to black
+    imgOutput = cv2.warpPerspective(img, matrix, (width,height), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0))
+    return imgOutput
