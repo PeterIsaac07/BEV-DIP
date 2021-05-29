@@ -252,3 +252,20 @@ def warp_percentage(img,DIM,percentage_X = 0.5,percentage_Y = 0.5):
     # do perspective transformation setting area outside input to black
     imgOutput = cv2.warpPerspective(img, matrix, (width,height), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0))
     return imgOutput
+
+
+
+
+
+
+def percpective_transform(frames_path,warped_path,calibration_params,percentage_X = 0.5,percentage_Y = 0.5,show_image= False):
+    DIM = calibration_params[2]
+    for fname in os.listdir(frames_path):
+        test = cv2.imread(os.path.join(frames_path,fname))
+        warped = warp_percentage(test,DIM,frames_path[-4:])
+        cv2.imwrite(os.path.join(warped_path,fname),warped)
+        if (show_image):
+            plt.imshow(test)
+            plt.show()
+            plt.imshow(warped)
+            plt.show()
