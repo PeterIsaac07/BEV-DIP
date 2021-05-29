@@ -203,3 +203,26 @@ def load_calibration_params(calibration_file_path):
     calibration_params = pickle.load(calibration_file)
     calibration_file.close()
     return calibration_params
+
+
+
+def undistort_fisheye(calibration_params,path,undistoretedpath):
+    K,D,DIM = calibration_params
+    undistorted = []
+    for fname in os.listdir(path):
+        distorted = cv2.imread(os.path.join(path,fname))
+        K_new = K.copy()
+        if undistoretedpath[-4:] == 'left' or undistoretedpath[-4:] == 'ight':
+            K_new[0,0] = K[0,0]/3
+            K_new[1,1] = K[1,1]/3
+        elif undistoretedpath[-4:] == 'ront' or undistoretedpath[-4:] == 'back':
+            K_new[0,0] = K[0,0]/2
+            K_new[1,1] = K[1,1]/2
+        #K_new = cv2.getOptimalNewCameraMatrix(K,D,distorted.shape[0:2],1)
+        #K_new = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(K,D,(distorted.shape[1],distorted.shape[0]),np.eye(3))
+        #map1, map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), K_new, DIM, cv2.CV_16SC2)
+        #undistorted_img = cv2.remap(distorted, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+        undistorted_img = cv2.fisheye.undistortImage(distorted,K,D,None,K_new)
+        undistorted.append(undistorted_img)
+        cv2.imwrite(os.path.join(undistoretedpath,'undistoreted'+fname),undistorted_img)
+
