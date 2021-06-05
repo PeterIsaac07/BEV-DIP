@@ -254,7 +254,60 @@ def warp_percentage(img,DIM,percentage_X = 0.5,percentage_Y = 0.5):
     return imgOutput
 
 
-
+def warp(img,DIM,side):
+    X = DIM[0]
+    Y = DIM[1]
+    
+    if side == 'left':
+        pt1 = [275,235] #Top-Left
+        pt2 = [357,235] #Top-Right
+        pt3 = [553,338] #Bottom-Right
+        pt4 = [40,338] #Bottom-Left
+        width = 232
+        height = 189
+    elif side == 'ront':
+        #pt1 = [280,238] #Top-Left
+        #pt2 = [359,238] #Top-Right
+        pt1 = [280,238] #Top-Left
+        pt2 = [359,238] #Top-Right
+        
+        #pt3 = [580,287] #Bottom-Right
+        #pt4 = [37,288] #Bottom-Left
+        pt3 = [612,295] #Bottom-Right
+        pt4 = [25,295] #Bottom-Left
+        width = 512
+        height = 140
+    elif side == 'back':
+        pt1 = [278,238] #Top-Left
+        pt2 = [360,238] #Top-Right
+        pt3 = [615,296] #Bottom-Right
+        pt4 = [50,292] #Bottom-Left
+        width = 512
+        height = 140
+    elif side == 'ight':
+        pt1 = [282,235] #Top-Left
+        pt2 = [365,235] #Top-Right
+        pt3 = [599,340] #Bottom-Right
+        pt4 = [66,343] #Bottom-Left
+        width = 232
+        height = 189
+    else:
+        print('Error in directories!')
+        return None
+    
+    pts_list = [pt1,pt2,pt3,pt4]
+    # read input
+    # specify desired output size 
+    # specify conjugate x,y coordinates (not y,x)
+    input_pts = np.float32(pts_list)
+    #for val in input_pts:
+    #    cv2.circle(img,(val[0],val[1]),5,(0,255,0),-1)
+    output_pts = np.float32([[0,0], [width,0], [width,height], [0,height]])
+    # compute perspective matrix
+    matrix = cv2.getPerspectiveTransform(input_pts,output_pts)
+    # do perspective transformation setting area outside input to black
+    imgOutput = cv2.warpPerspective(img, matrix, (width,height), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0))
+    return imgOutput
 
 
 
@@ -262,10 +315,91 @@ def percpective_transform(frames_path,warped_path,calibration_params,percentage_
     DIM = calibration_params[2]
     for fname in os.listdir(frames_path):
         test = cv2.imread(os.path.join(frames_path,fname))
-        warped = warp_percentage(test,DIM,frames_path[-4:])
+        warped = warp(test,DIM,frames_path[-4:])
         cv2.imwrite(os.path.join(warped_path,fname),warped)
         if (show_image):
             plt.imshow(test)
             plt.show()
             plt.imshow(warped)
             plt.show()
+
+def undistort_fisheye_no_files(calibration_params,img,side):
+    K,D,DIM = calibration_params
+    distorted = img
+    K_new = K.copy()
+    if side == 'left' or side == 'right':
+        K_new[0,0] = K[0,0]/3
+        K_new[1,1] = K[1,1]/3
+    elif side == 'front' or side == 'back':
+        K_new[0,0] = K[0,0]/7
+        K_new[1,1] = K[1,1]/7
+    undistorted_img = cv2.fisheye.undistortImage(distorted,K,D,None,K_new)
+    return undistorted_img
+
+
+def percpective_transform_no_files(undist_img,calibration_params,side):
+    DIM = calibration_params[2]
+    warped = warp(undist_img,DIM,side)
+    return warped
+
+def bird_eye_view_stream(sizeimg,calibration_file_path_list,num_frames = -1,port = 1117,host = "127.0.0.1"):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((host, port))
+        s.listen()
+        conn, addr = s.accept()
+        iterator2 = 0
+        with conn:
+            print('Connected by', addr)
+            while True:
+                data = readnbyte(conn,sizeimg*4)
+                if (not data):
+                    cv2.destroyAllWindows()
+                    break
+                imgL = read_TCP_image(data[0:sizeimg])
+                imgR = read_TCP_image(data[sizeimg:sizeimg*2])
+                imgT = read_TCP_image(data[sizeimg*2:sizeimg*3])
+                imgB = read_TCP_image(data[sizeimg*3:sizeimg*4])
+                
+                calibration_file_path_left = calibration_file_path_list[0]
+                calibration_file_path_right = calibration_file_path_list[1]
+                calibration_file_path_front = calibration_file_path_list[2]
+                calibration_file_path_back = calibration_file_path_list[3]
+                
+                calibration_params_right = load_calibration_params(calibration_file_path_right)
+                calibration_params_left = load_calibration_params(calibration_file_path_left)
+                calibration_params_front = load_calibration_params(calibration_file_path_front)
+                calibration_params_back = load_calibration_params(calibration_file_path_back)
+
+                undistL = undistort_fisheye_no_files(calibration_params_left,imgL,'left')
+                undistR = undistort_fisheye_no_files(calibration_params_right,imgR,'right')
+                undistF = undistort_fisheye_no_files(calibration_params_front,imgT,'front')
+                undistB = undistort_fisheye_no_files(calibration_params_back,imgB,'back')
+                
+                warped = [0]*4
+                
+                warped[0] = percpective_transform_no_files(undistL,calibration_params_left,'left')
+                warped[1] = percpective_transform_no_files(undistR,calibration_params_right,'ight')
+                warped[2] = percpective_transform_no_files(undistF,calibration_params_front,'ront')
+                warped[3] = percpective_transform_no_files(undistB,calibration_params_back,'back')
+                
+                bird_view = np.fliplr(warped[2])
+                middle_sec = np.rot90(np.fliplr(warped[0]))
+                middle_sec = np.hstack((middle_sec,np.zeros((232,134,3),np.uint8)))
+                middle_sec = np.hstack((middle_sec,np.rot90(np.fliplr(warped[1]),k=3)))
+                bird_view = np.vstack((bird_view,middle_sec))
+                bird_view = np.vstack((bird_view,np.fliplr(np.rot90(warped[3],k=2))))
+                
+                kernel = np.array([[0,-1,0], [-1,5,-1], [0,-1,0]])
+                bird_view = cv2.filter2D(bird_view,-1,kernel)
+                
+                cv2.imshow('Bird Eye View',bird_view)
+                cv2.waitKey(1)
+                
+                iterator2+= 1
+                if (iterator2 == num_frames):
+                    break
+
+def percpective_transform_no_files(undist_img,calibration_params,side):
+    DIM = calibration_params[2]
+    warped = warp(undist_img,DIM,side)
+    return warped
