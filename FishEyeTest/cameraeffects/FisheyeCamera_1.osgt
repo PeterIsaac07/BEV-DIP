@@ -1,0 +1,20 @@
+#Ascii Object 
+#Version 131 
+#Generator OpenSceneGraph 3.4.1 
+
+visosg::VisPostProcessOptions {
+  UniqueID 1 
+  Name "FisheyeCamera_1" 
+CameraDistortions TRUE {
+visosg::VisCameraDistortionOptions {
+      UniqueID 2 
+    }
+  }
+CameraLensOptions TRUE {
+visosg::VisCameraLensOptions {
+      UniqueID 3 
+      FisheyeActive TRUE 
+FieldOfView 180 
+}
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<CameraEffects>
+  <Setting camera="right_fish" effect="right_fish" />
+  <Setting camera="front_fish" effect="front_fish" />
+  <Setting camera="back_fish" effect="back_fish" />
+  <Setting camera="left_fish" effect="left_fish" />
+</CameraEffects>

@@ -259,37 +259,37 @@ def warp(img,DIM,side):
     Y = DIM[1]
     
     if side == 'left':
-        pt1 = [275,235] #Top-Left
-        pt2 = [357,235] #Top-Right
-        pt3 = [553,338] #Bottom-Right
-        pt4 = [40,338] #Bottom-Left
-        width = 232
+        #TL,TR,BR,BL
+        pt1 = [237,231]
+        pt2 = [396,231]
+        pt3 = [550,334]
+        pt4 = [43,334]
+        width_up = 512
+        width_down = 140
         height = 189
     elif side == 'ront':
-        #pt1 = [280,238] #Top-Left
-        #pt2 = [359,238] #Top-Right
-        pt1 = [280,238] #Top-Left
-        pt2 = [359,238] #Top-Right
-        
-        #pt3 = [580,287] #Bottom-Right
-        #pt4 = [37,288] #Bottom-Left
-        pt3 = [612,295] #Bottom-Right
-        pt4 = [25,295] #Bottom-Left
-        width = 512
+        pt1 = [170,230]
+        pt2 = [467,230]
+        pt3 = [587,441]
+        pt4 = [46,441]
+        width_up = 512
+        width_down = 189
         height = 140
     elif side == 'back':
-        pt1 = [278,238] #Top-Left
-        pt2 = [360,238] #Top-Right
-        pt3 = [615,296] #Bottom-Right
-        pt4 = [50,292] #Bottom-Left
-        width = 512
+        pt1 = [173,230]
+        pt2 = [466,230]
+        pt3 = [571,427]
+        pt4 = [67,427]
+        width_up = 512
+        width_down = 189
         height = 140
     elif side == 'ight':
-        pt1 = [282,235] #Top-Left
-        pt2 = [365,235] #Top-Right
-        pt3 = [599,340] #Bottom-Right
-        pt4 = [66,343] #Bottom-Left
-        width = 232
+        pt1 = [243,231]
+        pt2 = [400,231]
+        pt3 = [583,336]
+        pt4 = [78,336]
+        width_up = 512
+        width_down = 140
         height = 189
     else:
         print('Error in directories!')
@@ -302,12 +302,13 @@ def warp(img,DIM,side):
     input_pts = np.float32(pts_list)
     #for val in input_pts:
     #    cv2.circle(img,(val[0],val[1]),5,(0,255,0),-1)
-    output_pts = np.float32([[0,0], [width,0], [width,height], [0,height]])
+    output_pts = np.float32([[0,0], [width_up,0], [width_up - width_down,height], [width_down,height]])
     # compute perspective matrix
     matrix = cv2.getPerspectiveTransform(input_pts,output_pts)
     # do perspective transformation setting area outside input to black
-    imgOutput = cv2.warpPerspective(img, matrix, (width,height), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0))
+    imgOutput = cv2.warpPerspective(img, matrix, (width_up,height), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0))
     return imgOutput
+
 
 
 
@@ -342,7 +343,52 @@ def percpective_transform_no_files(undist_img,calibration_params,side):
     warped = warp(undist_img,DIM,side)
     return warped
 
-def bird_eye_view_stream(sizeimg,calibration_file_path_list,num_frames = -1,port = 1117,host = "127.0.0.1"):
+
+def percpective_transform_no_files(undist_img,calibration_params,side):
+    DIM = calibration_params[2]
+    warped = warp(undist_img,DIM,side)
+    return warped
+
+
+def stitch(warped,car_symbol):
+    left = warped[0]
+    right = warped[1]
+    front = warped[2]
+    back = warped[3]
+    front_ext = np.fliplr(np.vstack((front,np.zeros((372,512,3),np.uint8))))
+    back_flipped = np.fliplr(np.rot90(back,k=2))
+    back_ext = np.vstack((np.zeros((372,512,3),np.uint8),back_flipped))
+    left_flipped = np.rot90(np.fliplr(left))
+    left_ext = np.hstack((left_flipped,np.zeros((512,323,3),np.uint8)))
+    right_flipped = np.rot90(np.fliplr(right),k=3)
+    right_ext = np.hstack((np.zeros((512,323,3),np.uint8),right_flipped))
+    
+    front_ext[left_ext!=0] = 0
+    front_ext[right_ext!=0] = 0
+    back_ext[left_ext!=0] = 0
+    back_ext[right_ext!=0] = 0
+    
+    left_ext[front_ext!=0] = 0
+    left_ext[back_ext!=0] = 0
+    right_ext[front_ext!=0] = 0
+    right_ext[back_ext!=0] = 0
+    
+    #add car symbol
+    car_symbol = cv2.resize(car_symbol,(134,232))
+    top = 140
+    bottom = top
+    left = 189
+    right = left
+    borderType = cv2.BORDER_CONSTANT
+    car_symbol = cv2.copyMakeBorder(car_symbol, top, bottom, left, right, borderType)
+    
+    
+    bird_eye = front_ext + back_ext + left_ext + right_ext + car_symbol
+    return bird_eye
+
+
+
+def bird_eye_view_stream(sizeimg,calibration_file_path_list,num_frames = -1,port = 1117,host = "127.0.0.1",save = False):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen()
@@ -359,12 +405,12 @@ def bird_eye_view_stream(sizeimg,calibration_file_path_list,num_frames = -1,port
                 imgR = read_TCP_image(data[sizeimg:sizeimg*2])
                 imgT = read_TCP_image(data[sizeimg*2:sizeimg*3])
                 imgB = read_TCP_image(data[sizeimg*3:sizeimg*4])
-                
+
                 calibration_file_path_left = calibration_file_path_list[0]
                 calibration_file_path_right = calibration_file_path_list[1]
                 calibration_file_path_front = calibration_file_path_list[2]
                 calibration_file_path_back = calibration_file_path_list[3]
-                
+
                 calibration_params_right = load_calibration_params(calibration_file_path_right)
                 calibration_params_left = load_calibration_params(calibration_file_path_left)
                 calibration_params_front = load_calibration_params(calibration_file_path_front)
@@ -374,32 +420,29 @@ def bird_eye_view_stream(sizeimg,calibration_file_path_list,num_frames = -1,port
                 undistR = undistort_fisheye_no_files(calibration_params_right,imgR,'right')
                 undistF = undistort_fisheye_no_files(calibration_params_front,imgT,'front')
                 undistB = undistort_fisheye_no_files(calibration_params_back,imgB,'back')
-                
+
                 warped = [0]*4
-                
+
                 warped[0] = percpective_transform_no_files(undistL,calibration_params_left,'left')
                 warped[1] = percpective_transform_no_files(undistR,calibration_params_right,'ight')
                 warped[2] = percpective_transform_no_files(undistF,calibration_params_front,'ront')
                 warped[3] = percpective_transform_no_files(undistB,calibration_params_back,'back')
                 
-                bird_view = np.fliplr(warped[2])
-                middle_sec = np.rot90(np.fliplr(warped[0]))
-                middle_sec = np.hstack((middle_sec,np.zeros((232,134,3),np.uint8)))
-                middle_sec = np.hstack((middle_sec,np.rot90(np.fliplr(warped[1]),k=3)))
-                bird_view = np.vstack((bird_view,middle_sec))
-                bird_view = np.vstack((bird_view,np.fliplr(np.rot90(warped[3],k=2))))
-                
-                kernel = np.array([[0,-1,0], [-1,5,-1], [0,-1,0]])
-                bird_view = cv2.filter2D(bird_view,-1,kernel)
-                
+                bird_view = stitch(warped,car_symbol)
+
+                if (save == True):
+                    cv2.imwrite(left_dir_warped+'/warped'+str(iterator2)+'.png',warped[0])
+                    cv2.imwrite(right_dir_warped+'/warped'+str(iterator2)+'.png',warped[1])
+                    cv2.imwrite(front_dir_warped+'/warped'+str(iterator2)+'.png',warped[2])
+                    cv2.imwrite(back_dir_warped+'/warped'+str(iterator2)+'.png',warped[3])
+                    cv2.imwrite(bev_dir_warped+'/bev'+str(iterator2)+'.png',bird_view)
+
                 cv2.imshow('Bird Eye View',bird_view)
                 cv2.waitKey(1)
-                
+
                 iterator2+= 1
                 if (iterator2 == num_frames):
+                    cv2.destroyAllWindows()
                     break
 
-def percpective_transform_no_files(undist_img,calibration_params,side):
-    DIM = calibration_params[2]
-    warped = warp(undist_img,DIM,side)
-    return warped
+
