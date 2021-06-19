@@ -6,6 +6,13 @@ import cv2
 import matplotlib.pyplot as plt
 import pickle
 
+from ServerSocket import ServerSocket
+
+ServerSock = ServerSocket()
+ServerSock.Listen(65432)
+ServerSock.ClientAcceptor()
+mysock = ServerSock.GetClients()
+
 calibration_path = 'calibration_params'
 if not os.path.isdir(calibration_path):
     os.mkdir(calibration_path)
@@ -437,8 +444,14 @@ def bird_eye_view_stream(sizeimg,calibration_file_path_list,num_frames = -1,port
                     cv2.imwrite(back_dir_warped+'/warped'+str(iterator2)+'.png',warped[3])
                     cv2.imwrite(bev_dir_warped+'/bev'+str(iterator2)+'.png',bird_view)
 
-                cv2.imshow('Bird Eye View',bird_view)
-                cv2.waitKey(1)
+                #cv2.imshow('Bird Eye View',bird_view)
+                cv2.imwrite('out.png',bird_view)
+                bird_view = open('out.png','rb')
+                bird_view = bird_view.read()
+                data = bytearray(bird_view)
+                #print(data)
+                mysock[0].Send(data)
+                #cv2.waitKey(1)
 
                 iterator2+= 1
                 if (iterator2 == num_frames):
